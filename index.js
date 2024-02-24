@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const port = process.env.PORT || 5000;
@@ -223,15 +224,37 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
 
       // Carefully delete each item from the cart
-      const query = {
-        _id: {
-          $in: payment.cartIds.map((id) => new ObjectId(id)),
+      const query = {_id: {
+          $in: payment.cartIds.map(id => new ObjectId(id)),
         },
       };
       const deleteResult = await cartsCollection.deleteMany(query);
       console.log("Payment Info", payment);
-      res.send(paymentResult, deleteResult);
+      res.send({ paymentResult, deleteResult });
     });
+  //   app.post("/payments", async (req, res) => {
+  //     const payment = req.body;
+      
+  //     try {
+  //         const paymentResult = await paymentCollection.insertOne(payment);
+  
+  //         // Carefully delete each item from the cart
+  //         const query = {
+  //             _id: {
+  //                 $in: payment.cartIds.map(id => new ObjectId(id))
+  //             }
+  //         };
+  //         const deleteResult = await cartsCollection.deleteMany(query);
+  
+  //         console.log("Payment Info", payment);
+          
+  //         // Sending both paymentResult and deleteResult in the response
+  //         res.status(200).json({ paymentResult, deleteResult });
+  //     } catch (error) {
+  //         console.error("Error processing payment:", error);
+  //         res.status(500).json({ error: "Internal Server Error" });
+  //     }
+  // });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
